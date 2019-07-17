@@ -15,6 +15,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
+import model.services.DepartmentService;
 
 public class MainViewController implements Initializable {
 	// ID'S
@@ -35,7 +36,7 @@ public class MainViewController implements Initializable {
 
 	@FXML
 	public void onMenuItemDepartmentAction() {
-		loadView("/gui/DepartmentList.fxml");
+		loadView2("/gui/DepartmentList.fxml");
 	}
 
 	@FXML
@@ -62,6 +63,30 @@ public class MainViewController implements Initializable {
 			mainVBox.getChildren().add(mainMenu);
 			mainVBox.getChildren().addAll(newVBox.getChildren());
 			
+			
+		}catch (IOException e) {
+			Alerts.showAlert("IOException", null, "error:"+e.getMessage(), AlertType.ERROR);
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	private synchronized void loadView2(String absoluteName) {//syncronized para não ser interrompida pela aplicação MultiThread
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+			VBox newVBox = loader.load();
+			
+			Scene mainScene = Main.getMainScene();
+			//Pegando ref da tela original para a tela About
+			VBox mainVBox = (VBox)((ScrollPane) mainScene.getRoot()).getContent();//Este metodo pega o primeiro elemento da minha View
+			
+			Node mainMenu = mainVBox.getChildren().get(0);
+			mainVBox.getChildren().clear();
+			mainVBox.getChildren().add(mainMenu);
+			mainVBox.getChildren().addAll(newVBox.getChildren());
+			
+			DepartmentListController controller = loader.getController();
+			controller.setDepartmentService(new DepartmentService());//Injeto a dependencia
+			controller.updateTableView();//atualizo os dados
 			
 		}catch (IOException e) {
 			Alerts.showAlert("IOException", null, "error:"+e.getMessage(), AlertType.ERROR);
